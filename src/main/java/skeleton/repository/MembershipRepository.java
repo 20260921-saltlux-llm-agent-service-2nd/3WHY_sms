@@ -4,11 +4,15 @@ import skeleton.model.Membership;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static skeleton.common.JDBCTemplate.close;
+import static skeleton.common.JDBCTemplate.getConnection;
 
 /**
  * 구독 정보 JDBC 처리 담당.
@@ -45,6 +49,33 @@ public class MembershipRepository {
                                  String planName,
                                  int subscriptionDays) {
         // TODO: XML의 SQL을 사용해 로그인 회원의 신규 OTT 구독을 저장하세요.
+        PreparedStatement pstmt = null;
+        Connection con = getConnection();
+        String newSubs = prop.getProperty("insertMembership");
+        int result = 0;
+
+        try {
+            pstmt = con.prepareStatement(newSubs);
+            pstmt.setInt(1, memberId);
+            pstmt.setString(2, ottType);
+            pstmt.setString(3,planName);
+            pstmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now().plusDays(subscriptionDays)));
+
+            result = pstmt.executeUpdate();
+            if (result==1){
+                return true;
+            }
+
+
+        } catch (SQLException e) {
+            throw new IllegalStateException("구독 추가에 실패했습니다..", e);
+        } finally {
+            close(pstmt);
+            close(con);
+
+        }
+
+
         return false;
     }
 
