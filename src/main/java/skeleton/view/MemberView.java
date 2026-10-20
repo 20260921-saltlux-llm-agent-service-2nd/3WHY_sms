@@ -21,6 +21,21 @@ public class MemberView {
      */
     public void displayMemberships(List<Membership> memberships) {
         // TODO: 현재 구독 목록을 보기 좋은 형식으로 출력하세요.
+        // 1. 각 구독 정보 출력
+        for (Membership membership : memberships) {
+            int id = membership.getMembershipId();
+            String ott = membership.getOttType();
+            String plan = membership.getPlanName();
+            String regDateStr = membership.getEnrollDate().format(DATE_TIME_FORMATTER);
+            String expiryDateStr = membership.getExpiryDate().format(DATE_TIME_FORMATTER);
+
+            // 한 줄로 보기 좋게 출력
+            System.out.printf("구독 ID: %d | OTT: %s | 플랜: %s | 가입일: %s | 만료일: %s%n",
+                    id, ott, plan, regDateStr, expiryDateStr);
+        }
+
+
+
     }
 
     /*
