@@ -37,7 +37,27 @@ public class MemberRepository {
      */
     public boolean save(Member member) {
         // TODO: XML의 SQL을 사용해 JDBC로 신규 회원을 저장하세요.
-        return false;
+
+        // XML에서 회원가입 SQL가져오기
+        String join = prop.getProperty("insertMember");
+
+        try (Connection con = JDBCTemplate.getConnection(); // DB연결
+             PreparedStatement pstmt = con.prepareStatement(join)) { // SQL 준비
+
+            // SQL (name, age, phone)
+            pstmt.setString(1, member.getName());
+            pstmt.setInt(2, member.getAge());
+            pstmt.setString(3, member.getPhone());
+
+            // INSERT 실행
+            int result = pstmt.executeUpdate();
+
+            // 회원 1명이 저장햇으면 1 / 안 됐으면 0
+            return result == 1;
+        }
+    } catch (SQLException e) {
+            throw new IllegalStateException("회원 저장에 실패했습니다.", e);
+        }
     }
 
     /*
@@ -53,7 +73,35 @@ public class MemberRepository {
      */
     public Member findByPhone(String phone) {
         // TODO: XML의 SQL을 사용해 휴대폰 번호가 일치하는 회원을 조회하세요.
-        return null;
+
+        // XML에서 회원가입 SQL가져오기
+        String select = prop.getProperty("selectMemberByPhone");
+
+        try (Connection con = JDBCTemplate.getConnection(); // DB연결
+             PreparedStatement pstmt = con.prepareStatement(select)) { // SQL 준비
+
+            // 매개변수로 받은 phone
+            pstmt.setString(1, phone);
+
+            // 결과를 rset으로 받기
+            try (ResultSet rset = pstmt.executeQuery()) {
+
+                // 결과에 회원이 있으면
+                if (rset.next()) {
+                    Member member = new Member();
+                    member.setMemberId(rset.getInt("member_id"));
+                    member.setName(rset.getString("name"));
+                    member.setAge(rset.getInt("age"));
+                    member.setPhone(rset.getString("phone"));
+                    return member;
+
+                }
+            }
+            // 결과에 회원이 없으면
+            return null;
+        } catch (SQLException e) {
+            throw new IllegalStateException("회원 조회에 실패했습니다.", e);
+        }
     }
 
     /*
@@ -68,6 +116,24 @@ public class MemberRepository {
      */
     public boolean deleteById(int memberId) {
         // TODO: XML의 SQL을 사용해 로그인 회원을 삭제하세요.
-        return false;
+
+        // XML에서 회원가입 SQL가져오기
+        String delete = prop.getProperty("deleteMemberById");
+
+        try (Connection con = JDBCTemplate.getConnection(); // DB연결
+             PreparedStatement pstmt = con.prepareStatement(delete)) { // SQL 준비
+
+            // 매개변수로 받은 memberId
+            pstmt.setInt(1, memberId);
+
+            // DELETE 실행
+            int result = pstmt.executeUpdate();
+
+            // 회원 1명이 지워졌으면 true / 해당 번호가 없으면 0 → false
+            return result == 1;
+
+        } catch (SQLException e) {
+            throw new IllegalStateException("회원 탈퇴에 실패했습니다.", e);
+        }
     }
 }

@@ -33,6 +33,28 @@ public class MemberController {
      */
     public void signUp(String name, int age, String phone) {
         // TODO: 입력값과 휴대폰 번호 중복을 확인한 뒤 신규 회원을 저장하세요.
+
+        // 1. 입력값 검사
+        if (name == null || name.isEmpty() || age < 1 || phone == null || phone.isEmpty()) {
+            memberView.displayMessage("이름과 휴대폰 번호는 비어있을 수 없습니다. 나이는 1 이상이어야 합니다.");
+            return;
+        }
+
+        // 2. 폰 번호 중복 확인
+        if (memberRepository.findByPhone(phone) != null) {
+            memberView.displayMessage("이미 등록된 휴대폰 번호입니다.");
+            return;
+        }
+
+        // 3. 회원 저장
+        Member member = new Member(0, name, age, phone);
+
+        // save()가 true면 성공, false면 실패
+        if (memberRepository.save(member)) {
+            memberView.displayMessage("회원가입이 완료되었습니다.");
+        } else {
+            memberView.displayMessage("회원가입에 실패했습니다.");
+        }
     }
 
     /*
@@ -44,7 +66,14 @@ public class MemberController {
      */
     public boolean login(String phone) {
         // TODO: 휴대폰 번호로 로그인 상태를 설정하세요.
-        return false;
+         loginMember = memberRepository.findByPhone(phone);
+
+        if (memberRepository != null) {
+            memberView.displayMessage("환영 합니다." + loginMember);
+        } else {
+            memberView.displayMessage("등록되지 않은 휴대폰 번호입니다.");
+            return false;
+        }
     }
 
     /*
@@ -138,7 +167,22 @@ public class MemberController {
      */
     public boolean deleteMyAccount() {
         // TODO: 로그인 회원을 삭제하고 성공 시 로그인 상태를 해제하세요.
-        return false;
+
+        if(loginMember == null){
+            memberView.displayMessage("로그인 후 이용해주세요.");
+            return false;
+        }
+
+        boolean deleted = memberRepository.deleteById(loginMember.getMemberId());
+
+        if (deleted) {
+            loginMember = null;
+            memberView.displayMessage("회원 탈퇴가 완료되었습니다.");
+            return true;
+        } else {
+            memberView.displayMessage("회원 탈퇴에 실패했습니다.");
+            return false;
+        }
     }
 
     /*
