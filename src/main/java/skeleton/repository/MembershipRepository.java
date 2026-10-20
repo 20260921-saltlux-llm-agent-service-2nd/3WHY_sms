@@ -4,31 +4,16 @@ import skeleton.model.Membership;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
-
-import static skeleton.common.JDBCTemplate.close;
-import static skeleton.common.JDBCTemplate.getConnection;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import static skeleton.common.JDBCTemplate.close;
 import static skeleton.common.JDBCTemplate.getConnection;
 
 /**
  * 구독 정보 JDBC 처리 담당.
- *
+ * <p>
  * 모든 변경 쿼리는 membership_id뿐 아니라 로그인 회원의 member_id도
  * WHERE 조건으로 사용해야 한다.</p>
  */
@@ -70,11 +55,11 @@ public class MembershipRepository {
             pstmt = con.prepareStatement(newSubs);
             pstmt.setInt(1, memberId);
             pstmt.setString(2, ottType);
-            pstmt.setString(3,planName);
+            pstmt.setString(3, planName);
             pstmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now().plusDays(subscriptionDays)));
 
             result = pstmt.executeUpdate();
-            if (result==1){
+            if (result == 1) {
                 return true;
             }
 
@@ -114,7 +99,7 @@ public class MembershipRepository {
             pstmt = con.prepareStatement(query);
             pstmt.setInt(1, memberId);
 
-            while (rset.next()){
+            while (rset.next()) {
                 Membership membership = new Membership();
 
                 // 테이블의 컬럼명에 맞게 매핑
@@ -131,10 +116,10 @@ public class MembershipRepository {
             e.printStackTrace();
             throw new RuntimeException(e);
         } finally {
-          // 자원 반납
-          close(rset);
-          close(pstmt);
-          close(con);
+            // 자원 반납
+            close(rset);
+            close(pstmt);
+            close(con);
         }
         return membershipList;
     }
