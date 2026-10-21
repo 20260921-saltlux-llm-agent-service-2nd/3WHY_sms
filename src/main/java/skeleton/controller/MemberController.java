@@ -178,5 +178,9 @@ public class MemberController {
      */
     public void logout() {
         // TODO: 로그인 상태를 해제하세요.
+        if(loginMember != null) {
+            loginMember = null;
+            memberView.displayMessage("로그아웃되었습니다.");
+        }
     }
 }
