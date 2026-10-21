@@ -1,9 +1,12 @@
 package skeleton.controller;
 
 import skeleton.model.Member;
+import skeleton.model.Membership;
 import skeleton.repository.MemberRepository;
 import skeleton.repository.MembershipRepository;
 import skeleton.view.MemberView;
+
+import java.util.List;
 
 // 사용자 입력과 repository/view 사이의 흐름을 조정한다.
 public class MemberController {
@@ -94,6 +97,15 @@ public class MemberController {
      */
     public void displayMyActiveMemberships() {
         // TODO: 로그인 회원의 현재 구독 목록을 화면에 전달하세요.
+        List<Membership> memberships =
+                membershipRepository.findActiveMembershipsByMemberId(loginMember.getMemberId());
+
+        if(memberships.isEmpty()){
+            memberView.displayMessage("현재 이용 중인 구독이 없습니다.");
+        } else {
+            memberView.displayMemberships(memberships);
+        }
+
     }
 
     /*
@@ -106,6 +118,8 @@ public class MemberController {
      */
     public boolean displayMyMembershipHistory() {
         // TODO: 선택 가능한 전체 구독 기록을 출력하고 존재 여부를 반환하세요.
+
+
         return false;
     }
 

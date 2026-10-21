@@ -4,10 +4,7 @@ import skeleton.model.Membership;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -16,7 +13,7 @@ import static skeleton.common.JDBCTemplate.getConnection;
 
 /**
  * 구독 정보 JDBC 처리 담당.
- *
+ * <p>
  * 모든 변경 쿼리는 membership_id뿐 아니라 로그인 회원의 member_id도
  * WHERE 조건으로 사용해야 한다.</p>
  */
@@ -58,11 +55,11 @@ public class MembershipRepository {
             pstmt = con.prepareStatement(newSubs);
             pstmt.setInt(1, memberId);
             pstmt.setString(2, ottType);
-            pstmt.setString(3,planName);
+            pstmt.setString(3, planName);
             pstmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now().plusDays(subscriptionDays)));
 
             result = pstmt.executeUpdate();
-            if (result==1){
+            if (result == 1) {
                 return true;
             }
 
@@ -90,7 +87,41 @@ public class MembershipRepository {
      */
     public List<Membership> findActiveMembershipsByMemberId(int memberId) {
         // TODO: XML의 SQL을 사용해 로그인 회원의 현재 구독 목록을 조회하세요.
-        return new ArrayList<>();
+        String query = prop.getProperty("selectActiveMemberships");
+        Connection con = getConnection();
+        PreparedStatement pstmt = null;
+        ResultSet rset = null;
+
+        // 결과를 담을 비어있는 List 생성 (조회 결과가 없으면 이대로 반환됨)
+        List<Membership> membershipList = new ArrayList<>();
+
+        try {
+            pstmt = con.prepareStatement(query);
+            pstmt.setInt(1, memberId);
+
+            while (rset.next()) {
+                Membership membership = new Membership();
+
+                // 테이블의 컬럼명에 맞게 매핑
+                membership.setMembershipId(rset.getInt("membership_id"));
+                membership.setMemberId(rset.getInt("member_id"));
+                membership.setActive(rset.getBoolean("active"));
+                membership.setExpiryDate(rset.getTimestamp("expiry_date").toLocalDateTime());
+
+                membershipList.add(membership);
+            }
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            // 자원 반납
+            close(rset);
+            close(pstmt);
+            close(con);
+        }
+        return membershipList;
     }
 
     /*
